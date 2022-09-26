@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/gocql/gocql"
 
@@ -15,9 +14,7 @@ type IDriverRepository interface {
 	DestroyRepository()
 	AddDriver(driver models.Driver) error
 	SetStatus(status bool, phoneNumber string) error
-	RateRide(phoneNumber string, rating int) error
 	GetDriver(phoneNumber string) (models.Driver, error)
-	GetDriverRatings(phoneNumber string) ([]models.Rating, error)
 	GetFreeDrivers() ([]models.Driver, error)
 	DoesPhoneExists(phoneNumber string) error
 }
@@ -32,7 +29,7 @@ func migrate(session *gocql.Session) error {
 		return err
 	}
 
-	createDriverTable := `CREATE TABLE IF NOT EXISTS drivers(
+	createDriverTable := `CREATE TABLE IF NOT EXISTS driverservice.drivers(
     	phoneNumber text,
     	name text,
     	email text,
@@ -45,7 +42,7 @@ func migrate(session *gocql.Session) error {
 		return err
 	}
 
-	createRatingTable := `CREATE TABLE IF NOT EXISTS ratings(
+	createRatingTable := `CREATE TABLE IF NOT EXISTS driverservice.ratings(
     	phoneNumber text,
         id int,
         rating int,
@@ -59,7 +56,6 @@ func migrate(session *gocql.Session) error {
 
 func NewDriverRepository(config configs.Config) (*DriverRepository, error) {
 	cluster := gocql.NewCluster(config.CassandraFirstNode, config.CassandraSecondNode, config.CassandraThirdNode)
-	cluster.Keyspace = config.CassandraKeySpace
 	session, err := cluster.CreateSession()
 	if err != nil {
 		return nil, err
@@ -73,7 +69,7 @@ func NewDriverRepository(config configs.Config) (*DriverRepository, error) {
 
 func (r *DriverRepository) DoesPhoneExists(phoneNumber string) error {
 	var number string
-	query := "SELECT phoneNumber FROM driverservice.drivers WHERE phoneNumber = ?;"
+	query := `SELECT phoneNumber FROM driverservice.drivers WHERE phoneNumber = ?`
 	q := r.session.Query(query, phoneNumber)
 
 	err := q.Scan(&number)
@@ -167,28 +163,4 @@ func (r *DriverRepository) GetFreeDrivers() ([]models.Driver, error) {
 		driverMap = map[string]interface{}{}
 	}
 	return drivers, nil
-}
-
-func (r *DriverRepository) GetDriverRatings(phoneNumber string) ([]models.Rating, error) {
-	ratingMap := make(map[string]interface{})
-	query := `SELECT * FROM driverservice.ratings where phoneNumber = ?`
-	iterator := r.session.Query(query, phoneNumber).Iter()
-	var ratings []models.Rating
-	for iterator.Scan(ratingMap) {
-		rating, err := strconv.Atoi(fmt.Sprintf("%v", ratingMap["rating"]))
-		if err != nil {
-			return nil, nil
-		}
-		id, err := strconv.Atoi(fmt.Sprintf("%v", ratingMap["id"]))
-		if err != nil {
-			return nil, nil
-		}
-		ratings = append(ratings, models.Rating{
-			PhoneNumber: fmt.Sprintf("%v", ratingMap["phoneNumber"]),
-			Rating:      rating,
-			Id:          id,
-		})
-		ratingMap = map[string]interface{}{}
-	}
-	return ratings, nil
 }

@@ -9,11 +9,9 @@ import (
 
 type IDriverService interface {
 	RegisterDriver(driver dto.Driver) error
-	RateRide(rating int, phoneNumber string) error
 	GetDriver(phoneNumber string) (models.Driver, error)
 	SetStatus(status bool, phoneNumber string) error
 	LogInDriver(driver dto.LogInDriverRequest) (models.Driver, error)
-	GetRatings(phoneNumber string) ([]models.Rating, error)
 }
 
 type DriverService struct {
@@ -66,13 +64,6 @@ func (s *DriverService) SetStatus(status bool, phoneNumber string) error {
 	return nil
 }
 
-func (s *DriverService) RateRide(rating int, phoneNumber string) error {
-	if err := s.repository.RateRide(phoneNumber, rating); err != nil {
-		return err
-	}
-	return nil
-}
-
 func (s *DriverService) LogInDriver(driver dto.LogInDriverRequest) (models.Driver, error) {
 	foundDriver, err := s.repository.GetDriver(driver.PhoneNumber)
 	if err != nil {
@@ -84,12 +75,4 @@ func (s *DriverService) LogInDriver(driver dto.LogInDriverRequest) (models.Drive
 		return models.Driver{}, err
 	}
 	return foundDriver, nil
-}
-
-func (s *DriverService) GetRatings(phoneNumber string) ([]models.Rating, error) {
-	ratings, err := s.repository.GetDriverRatings(phoneNumber)
-	if err != nil {
-		return nil, err
-	}
-	return ratings, nil
 }

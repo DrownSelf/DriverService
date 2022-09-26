@@ -9,6 +9,8 @@
 
 package dto
 
-type DeleteDriverRequest struct {
-	Id int32 `json:"id,omitempty"`
+type GetDriverResponse struct {
+	PhoneNumber string `json:"phoneNumber"`
+	Name        string `json:"name"`
+	TaxiType    string `json:"taxiType"`
 }

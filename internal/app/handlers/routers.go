@@ -6,7 +6,9 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	httpSwagger "github.com/swaggo/http-swagger"
 
+	_ "DriverService/cmd/docs"
 	"DriverService/internal/app/middlewares"
 )
 
@@ -41,20 +43,6 @@ func NewRoutes(handler *Handler) *Routes {
 			},
 
 			Route{
-				"ApiV1DriverRatingGet",
-				strings.ToUpper("Get"),
-				"/api/v1/driver/rating",
-				handler.ApiV1DriverRatingGet,
-			},
-
-			Route{
-				"ApiV1DriverFeedbackRidePost",
-				strings.ToUpper("Post"),
-				"/api/v1/driver/feedbackRide",
-				handler.ApiV1DriverFeedbackRidePost,
-			},
-
-			Route{
 				"ApiV1DriverLoginPost",
 				strings.ToUpper("Post"),
 				"/api/v1/driver/login",
@@ -80,6 +68,10 @@ func NewRoutes(handler *Handler) *Routes {
 
 func NewRouter(h *Handler) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
+	router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
+	)).Methods(http.MethodGet)
+
 	for _, route := range NewRoutes(h).routes {
 		var handler http.Handler
 		handler = route.HandlerFunc
