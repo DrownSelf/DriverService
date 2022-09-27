@@ -62,18 +62,17 @@ const docTemplate = `{
       },
       "type": "object"
     },
-	"dto.ChangeDriverStatus": {
-      "properties" :{
-		"status": {
-		  "type": "boolean"
-          }
-		},
-      "type" : "object"
-	},
+    "dto.ChangeStatusRequest": {
+      "properties": {
+        "status": {
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
     "id": {
       "type": "integer"
     },
-    
     "token": {
       "type": "string"
     }
@@ -176,6 +175,30 @@ const docTemplate = `{
         }
       }
     },
+    "/api/v1/driver/logout": {
+      "get": {
+        "summary": "log out from session",
+        "security": [
+          {
+            "JWT": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad request. Cause can be that you logged out before or haven't sign in."
+          }
+        },
+        "tags": [
+          "Actions with token"
+        ]
+      }
+    },
     "/api/v1/driver/status": {
       "put": {
         "summary": "Change status of driver",
@@ -191,9 +214,9 @@ const docTemplate = `{
           {
             "name": "param to set driver status",
             "in": "body",
-            "description": "object which you need send to change status",
+            "description": "object which you need send to register",
             "schema": {
-              "$ref": "#/definitions/dto.ChangeDriverStatus"
+              "$ref": "#/definitions/dto.ChangeStatusRequest"
             }
           }
         ],
@@ -211,7 +234,7 @@ const docTemplate = `{
       }
     }
   },
-  "host": "localhost:8080",
+  "host": "localhost:80",
   "swagger": "2.0"
 }`
 

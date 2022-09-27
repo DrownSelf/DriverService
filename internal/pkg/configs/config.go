@@ -12,6 +12,7 @@ type Config struct {
 	CassandraThirdNode  string
 	CassandraKeySpace   string
 	SecretKey           string
+	AppPort             string
 }
 
 func LoadConnectionConfig() (*Config, error) {
@@ -26,6 +27,6 @@ func LoadConnectionConfig() (*Config, error) {
 	config.CassandraSecondNode = os.Getenv("CASSANDRA_NODE2")
 	config.CassandraThirdNode = os.Getenv("CASSANDRA_NODE3")
 	config.CassandraKeySpace = os.Getenv("CASSANDRA_KEYSPACE")
-
+	config.AppPort = os.Getenv("APP_PORT")
 	return &config, err
 }

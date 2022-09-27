@@ -15,6 +15,7 @@ type IDriverRepository interface {
 	AddDriver(driver models.Driver) error
 	SetStatus(status bool, phoneNumber string) error
 	GetDriver(phoneNumber string) (models.Driver, error)
+	GetDrivers() ([]models.Driver, error)
 	GetFreeDrivers() ([]models.Driver, error)
 	DoesPhoneExists(phoneNumber string) error
 }
@@ -42,15 +43,6 @@ func migrate(session *gocql.Session) error {
 		return err
 	}
 
-	createRatingTable := `CREATE TABLE IF NOT EXISTS driverservice.ratings(
-    	phoneNumber text,
-        id int,
-        rating int,
-        primary key (phoneNumber, id)
-	)`
-	if err := session.Query(createRatingTable).Exec(); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -102,15 +94,6 @@ func (r *DriverRepository) AddDriver(driver models.Driver) error {
 func (r *DriverRepository) SetStatus(status bool, phoneNumber string) error {
 	query := `UPDATE driverservice.drivers SET status = ? where phoneNumber = ?`
 	err := r.session.Query(query, status, phoneNumber).Exec()
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (r *DriverRepository) RateRide(phoneNumber string, rating int) error {
-	query := `INSERT INTO driverservice.ratings(phoneNumber, rating) VALUES(?, ?)`
-	err := r.session.Query(query, phoneNumber, rating).Exec()
 	if err != nil {
 		return err
 	}

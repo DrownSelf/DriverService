@@ -42,7 +42,7 @@ func (h *Handler) ApiV1DriverLoginPost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	session.Values["authorization"] = true
+	session.Values["auth"] = true
 	session.Values["phoneNumber"] = response.PhoneNumber
 	session.Options = &sessions.Options{MaxAge: 3600}
 	if err = session.Save(r, w); err != nil {
@@ -51,6 +51,26 @@ func (h *Handler) ApiV1DriverLoginPost(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	_ = json.NewEncoder(w).Encode("Successfully logged in")
+}
+
+func (h *Handler) ApiV1DriverLogOut(w http.ResponseWriter, r *http.Request) {
+	session, err := h.store.Get(r, "driver-session")
+	if err != nil {
+		appErrors.HandleErr(w, err)
+		return
+	}
+
+	if ok := session.Values["auth"]; ok == nil || ok.(bool) == false {
+		appErrors.HandleErr(w, appErrors.ErrInvalidSession)
+		return
+	}
+	session.Values["auth"] = false
+	if err = session.Save(r, w); err != nil {
+		appErrors.HandleErr(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode("Successfully logged out")
 }
 
 func (h *Handler) ApiV1DriverRegisterPost(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +97,7 @@ func (h *Handler) ApiV1DriverStatusPost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if ok := session.Values["authorization"]; ok == nil {
+	if ok := session.Values["auth"]; ok == nil || ok.(bool) == false {
 		appErrors.HandleErr(w, appErrors.ErrInvalidSession)
 		return
 	}
@@ -106,7 +126,7 @@ func (h *Handler) ApiV1DriverGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if ok := session.Values["authorization"]; ok == nil {
+	if ok := session.Values["auth"]; ok == nil || ok.(bool) == false {
 		appErrors.HandleErr(w, appErrors.ErrInvalidSession)
 		return
 	}

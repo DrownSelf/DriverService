@@ -42,5 +42,5 @@ func main() {
 	handler := sw.NewHanlder(service, *config)
 	router := sw.NewRouter(handler)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":"+config.AppPort, router))
 }

@@ -57,6 +57,13 @@ func NewRoutes(handler *Handler) *Routes {
 			},
 
 			Route{
+				"ApiV1DriverLogOut",
+				strings.ToUpper("Get"),
+				"/api/v1/driver/logout",
+				handler.ApiV1DriverLogOut,
+			},
+
+			Route{
 				"ApiV1DriverStatusPost",
 				strings.ToUpper("Put"),
 				"/api/v1/driver/status",
@@ -69,7 +76,7 @@ func NewRoutes(handler *Handler) *Routes {
 func NewRouter(h *Handler) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	router.PathPrefix("/swagger/").Handler(httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
+		httpSwagger.URL("http://localhost:80/swagger/doc.json"), //The url pointing to API definition
 	)).Methods(http.MethodGet)
 
 	for _, route := range NewRoutes(h).routes {
