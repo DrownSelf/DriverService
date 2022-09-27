@@ -60,7 +60,7 @@ func (h *Handler) ApiV1DriverLogOut(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if ok := session.Values["auth"]; ok == nil || ok.(bool) == false {
+	if ok := session.Values["auth"]; ok == nil || !ok.(bool) {
 		appErrors.HandleErr(w, appErrors.ErrInvalidSession)
 		return
 	}
@@ -97,7 +97,7 @@ func (h *Handler) ApiV1DriverStatusPost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	if ok := session.Values["auth"]; ok == nil || ok.(bool) == false {
+	if ok := session.Values["auth"]; ok == nil || !ok.(bool) {
 		appErrors.HandleErr(w, appErrors.ErrInvalidSession)
 		return
 	}
@@ -126,7 +126,7 @@ func (h *Handler) ApiV1DriverGet(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if ok := session.Values["auth"]; ok == nil || ok.(bool) == false {
+	if ok := session.Values["auth"]; ok == nil || !ok.(bool) {
 		appErrors.HandleErr(w, appErrors.ErrInvalidSession)
 		return
 	}
