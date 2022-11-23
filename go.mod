@@ -3,7 +3,7 @@ module github.com/DrownSelf/DriverService
 go 1.18
 
 require (
-	github.com/DrownSelf/OrderService v0.0.0-20221019145548-ffcf8e5ed3c3
+	github.com/DrownSelf/OrderService v0.0.0-20221103075745-8cb95013a5cc
 	github.com/go-openapi/errors v0.20.2
 	github.com/go-openapi/loads v0.21.2
 	github.com/go-openapi/runtime v0.24.2

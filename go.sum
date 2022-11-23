@@ -3,6 +3,8 @@ cloud.google.com/go v0.34.0/go.mod h1:aQUYkXzVsufM+DwF1aE+0xfcU+56JwCaLick0ClmMT
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/DrownSelf/OrderService v0.0.0-20221019145548-ffcf8e5ed3c3 h1:9pY6FO+zEFOR/psSPvrHW0L10nbXiZpX4XyF6nFBQCs=
 github.com/DrownSelf/OrderService v0.0.0-20221019145548-ffcf8e5ed3c3/go.mod h1:J9wnX2l9ZPtsaqM9DYn5TTM4OWvwZcdP6C/khYTqFcY=
+github.com/DrownSelf/OrderService v0.0.0-20221103075745-8cb95013a5cc h1:PfOZ7ud2kpug7BJzK4jMOzF5NdLaKuBrXD6LJlqEJZQ=
+github.com/DrownSelf/OrderService v0.0.0-20221103075745-8cb95013a5cc/go.mod h1:NvVsXYKkGL8l8IwK1qoZ4pL7siHYXuDXRsop8tzS578=
 github.com/PuerkitoBio/purell v1.1.1/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
