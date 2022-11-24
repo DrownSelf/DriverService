@@ -15,13 +15,15 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Enable ssh agent
-        run: eval `ssh-agent -s`
-
       - name: Add private key for repo
         env:
           KEY: ${{ secrets.KEYFORORDER }}
-        run: echo "$KEY" | tr -d '\r' | ssh-add -
+        run:
+          eval `ssh-agent -s`
+          echo "$KEY" | tr -d '\r' | ssh-add -
+
+      - name: Show auth
+        run: shh-add -l
 
       - name: Set envar
         run: export GOPRIVATE=github.com/DrownSelf
