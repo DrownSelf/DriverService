@@ -17,10 +17,10 @@ jobs:
 
       - name: Add private key for repo
         env:
-          KEY: ${{ secrets.KEYFORORDER }}
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run:
-          eval `ssh-agent -s`
-          echo "$KEY" | tr -d '\r' | ssh-add -
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.KEYFORORDER }}"
 
       - name: Show auth
         run: shh-add -l
