@@ -15,8 +15,11 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Creds
-        run: echo ${GH_CREDS} >> ~/.netrc
+      - uses: extractions/netrc@v1
+        with:
+          machine: github.com
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
 
       - name: Set envar
         run: export GOPRIVATE=github.com/DrownSelf
