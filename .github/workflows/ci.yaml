@@ -15,6 +15,8 @@ jobs:
         with:
           go-version: 1.18
 
+      - run: apt update && apt install -y openssh-client git
+        
       - name: Enable ssh agent
         run: eval `ssh-agent -s`
 
