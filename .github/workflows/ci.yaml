@@ -15,11 +15,8 @@ jobs:
         with:
           go-version: 1.18
 
-      - name: Set gitconfig
-        run: git config --global url."strigelskiy.petr@gmail.com".insteadOf "https://github.com"
-
       - name: Set envar
-        run: go env -w GOPRIVATE=github.com/DrownSelf
+        run: export GOPRIVATE=github.com/DrownSelf
 
       - name: Verify dependencies
         run: go mod verify
