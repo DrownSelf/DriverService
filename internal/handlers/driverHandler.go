@@ -50,13 +50,13 @@ type DriverHandler struct {
 	config        *configs.Config
 }
 
-func NewDriverHandler(dependencies HandlerDependencies) (*DriverHandler, error) {
+func NewDriverHandler(dependencies HandlerDependencies) *DriverHandler {
 	return &DriverHandler{
 		driverService: dependencies.DriverService,
 		orderClient:   dependencies.OrderClient,
 		forger:        dependencies.Forger,
 		config:        dependencies.Config,
-	}, nil
+	}
 }
 
 func ConfigureHandlers(swaggerApi *operations.DriverServiceAPI, handler IDriverHandler) {
@@ -119,6 +119,10 @@ func (h *DriverHandler) LogIn(params logging_actions.PostDriverLoginParams) midd
 				PhoneNumber: gottenDriver.PhoneNumber,
 			},
 			*h.config)
+		if err != nil {
+			appErrors.HandleErr(w, err)
+			return
+		}
 
 		cookie := http.Cookie{
 			Name:   "Token",

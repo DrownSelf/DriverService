@@ -6,6 +6,7 @@ import (
 
 	"github.com/go-openapi/loads"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	pb "github.com/DrownSelf/OrderService/pkg/grpc"
 
@@ -40,20 +41,20 @@ func main() {
 	// create new service API
 	api := operations.NewDriverServiceAPI(swaggerSpec)
 	server := restapi.NewServer(api)
-	defer server.Shutdown()
+
 	server.Port, err = strconv.Atoi(config.AppPort)
 	if err != nil {
 		log.Fatalf("error during connecting to server: %v", err)
 	}
 
-	conn, err := grpc.Dial(config.GrpcClient, grpc.WithInsecure(), grpc.WithBlock())
+	conn, err := grpc.Dial(config.GrpcClient, grpc.WithTransportCredentials(insecure.NewCredentials()), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("can't connect to grpc server: %v", err)
 	}
 
 	client := pb.NewOrderServiceClient(conn)
 	service := services.NewDriverService(repository, &auth.Hasher{})
-	handler, err := handlers.NewDriverHandler(handlers.HandlerDependencies{
+	handler := handlers.NewDriverHandler(handlers.HandlerDependencies{
 		DriverService: service,
 		OrderClient:   client,
 		Forger:        forger,
@@ -63,4 +64,5 @@ func main() {
 	if err = server.Serve(); err != nil {
 		log.Fatalln(err)
 	}
+	_ = server.Shutdown()
 }
