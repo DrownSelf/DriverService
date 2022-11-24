@@ -20,7 +20,7 @@ jobs:
 
       - name: Add private key for repo
         env:
-          KEY: ${{ secret.KEYFORORDER }}
+          KEY: ${{ secrets.KEYFORORDER }}
         run: ssh-add "%KEY%"
 
       - name: Set envar
