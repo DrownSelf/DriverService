@@ -8,9 +8,10 @@ jobs:
   testAndLint:
     runs-on: ubuntu-22.04
     steps:
-      - env:
-          secret: ${{ secret.KEYFORORDER }}
       - uses: actions/checkout@v3
+      - name: retrieve secret from Git
+      - env:
+          KEY: ${{ secret.KEYFORORDER }}
 
       - name: Set up Go
         uses: actions/setup-go@v2
@@ -21,7 +22,7 @@ jobs:
         run: eval `ssh-agent`
 
       - name: Add private key for repo
-        run: ssh-add "%KEYFORORDER%"
+        run: ssh-add "%KEY%"
 
       - name: Set envar
         run: export GOPRIVATE=github.com/DrownSelf
