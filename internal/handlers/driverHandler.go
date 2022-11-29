@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 
-	pb "github.com/DrownSelf/OrderService/pkg/grpc"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 
@@ -19,47 +18,27 @@ import (
 	"github.com/DrownSelf/DriverService/restapi/operations/logging_actions"
 )
 
-type IDriverHandler interface {
-	GetDriver(params actions_with_token.GetDriverParams) middleware.Responder
-	Logout(params actions_with_token.GetDriverLogoutParams) middleware.Responder
-	LogIn(params logging_actions.PostDriverLoginParams) middleware.Responder
-	Register(params logging_actions.PostDriverRegisterParams) middleware.Responder
-	EndRide(params actions_with_token.PostDriverEndRideParams) middleware.Responder
-	TakeOrder(params actions_with_token.PostDriverTakeOrderParams) middleware.Responder
-	RateUser(params actions_with_token.PostDriverRateUserParams) middleware.Responder
-	RateDriverFromOrder(params actions_with_token.PostOrderRateDriverParams) middleware.Responder
-}
-
 type CustomResponder func(http.ResponseWriter, runtime.Producer)
 
 func (c CustomResponder) WriteResponse(w http.ResponseWriter, p runtime.Producer) {
 	c(w, p)
 }
 
-type HandlerDependencies struct {
-	DriverService services.IDriverService
-	OrderClient   pb.OrderServiceClient
-	Forger        auth.TokenForger
-	Config        *configs.Config
-}
-
 type DriverHandler struct {
 	driverService services.IDriverService
-	orderClient   pb.OrderServiceClient
 	forger        auth.TokenForger
 	config        *configs.Config
 }
 
-func NewDriverHandler(dependencies HandlerDependencies) *DriverHandler {
-	return &DriverHandler{
-		driverService: dependencies.DriverService,
-		orderClient:   dependencies.OrderClient,
-		forger:        dependencies.Forger,
-		config:        dependencies.Config,
+func NewDriverHandler(driverService services.IDriverService, forger auth.TokenForger, config *configs.Config) DriverHandler {
+	return DriverHandler{
+		driverService: driverService,
+		forger:        forger,
+		config:        config,
 	}
 }
 
-func ConfigureHandlers(swaggerApi *operations.DriverServiceAPI, handler IDriverHandler) {
+func ConfigureHandlers(swaggerApi *operations.DriverServiceAPI, handler DriverHandler) {
 	swaggerApi.ActionsWithTokenGetDriverHandler = actions_with_token.GetDriverHandlerFunc(handler.GetDriver)
 	swaggerApi.LoggingActionsPostDriverLoginHandler = logging_actions.PostDriverLoginHandlerFunc(handler.LogIn)
 	swaggerApi.LoggingActionsPostDriverRegisterHandler = logging_actions.PostDriverRegisterHandlerFunc(handler.Register)
@@ -190,11 +169,7 @@ func (h *DriverHandler) EndRide(params actions_with_token.PostDriverEndRideParam
 			return
 		}
 
-		_, err = h.orderClient.EndRide(params.HTTPRequest.Context(), &pb.EndRideRequest{
-			OrderId:     params.ChangeStatusOfRequest.ID,
-			OrderStatus: false,
-		})
-
+		err = h.driverService.EndRide(params.HTTPRequest.Context(), params.ChangeStatusOfRequest.ID)
 		if err != nil {
 			appErrors.HandleErr(w, err)
 			return
@@ -218,13 +193,11 @@ func (h *DriverHandler) TakeOrder(params actions_with_token.PostDriverTakeOrderP
 			return
 		}
 
-		order, err := h.orderClient.TakeOrder(params.HTTPRequest.Context(), &pb.ServeClientRequest{
-			Driver: &pb.Driver{
-				Name:        params.RequestToAssignInWatingQueue.Name,
-				Email:       params.RequestToAssignInWatingQueue.Email,
-				PhoneNumber: params.RequestToAssignInWatingQueue.PhoneNumber,
-				TaxiType:    params.RequestToAssignInWatingQueue.TaxiType,
-			},
+		order, err := h.driverService.TakeOrder(params.HTTPRequest.Context(), entities.Driver{
+			Name:        params.RequestToAssignInWatingQueue.Name,
+			Email:       params.RequestToAssignInWatingQueue.Email,
+			PhoneNumber: params.RequestToAssignInWatingQueue.PhoneNumber,
+			TaxiType:    params.RequestToAssignInWatingQueue.TaxiType,
 		})
 		if err != nil {
 			appErrors.HandleErr(w, err)
@@ -254,11 +227,7 @@ func (h *DriverHandler) RateUser(params actions_with_token.PostDriverRateUserPar
 			return
 		}
 
-		_, err = h.orderClient.RateRideFromDriver(params.HTTPRequest.Context(), &pb.RateUserFromDriver{
-			OrderId: params.RequestToRateUser.ID,
-			Rating:  int32(params.RequestToRateUser.Rating),
-		})
-
+		err = h.driverService.RateRideFromDriver(params.HTTPRequest.Context(), params.RequestToRateUser.ID, int32(params.RequestToRateUser.Rating))
 		if err != nil {
 			appErrors.HandleErr(w, err)
 			return

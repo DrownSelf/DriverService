@@ -53,13 +53,8 @@ func main() {
 	}
 
 	client := pb.NewOrderServiceClient(conn)
-	service := services.NewDriverService(repository, &auth.Hasher{})
-	handler := handlers.NewDriverHandler(handlers.HandlerDependencies{
-		DriverService: service,
-		OrderClient:   client,
-		Forger:        forger,
-		Config:        config,
-	})
+	service := services.NewDriverService(repository, &auth.Hasher{}, client)
+	handler := handlers.NewDriverHandler(service, forger, config)
 	handlers.ConfigureHandlers(api, handler)
 	if err = server.Serve(); err != nil {
 		log.Fatalln(err)

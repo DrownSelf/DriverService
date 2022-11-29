@@ -1,6 +1,10 @@
 package services
 
 import (
+	"context"
+
+	pb "github.com/DrownSelf/OrderService/pkg/grpc"
+
 	"github.com/DrownSelf/DriverService/internal/auth"
 	"github.com/DrownSelf/DriverService/internal/entities"
 	"github.com/DrownSelf/DriverService/internal/repositories"
@@ -11,15 +15,19 @@ type IDriverService interface {
 	GetDriver(phoneNumber string) (entities.Driver, error)
 	LogInDriver(driver entities.Driver) (entities.Driver, error)
 	RateDriverFromOrder(phoneNumber string, rating float64) error
+	EndRide(ctx context.Context, id string) error
+	TakeOrder(ctx context.Context, driver entities.Driver) (*pb.DriverRideResponse, error)
+	RateRideFromDriver(ctx context.Context, id string, rating int32) error
 }
 
 type DriverService struct {
-	repository repositories.IDriverRepository
-	hasher     auth.IHasher
+	repository  repositories.IDriverRepository
+	hasher      auth.IHasher
+	orderClient pb.OrderServiceClient
 }
 
-func NewDriverService(repository repositories.IDriverRepository, hasher auth.IHasher) *DriverService {
-	return &DriverService{repository: repository, hasher: hasher}
+func NewDriverService(repository repositories.IDriverRepository, hasher auth.IHasher, client pb.OrderServiceClient) *DriverService {
+	return &DriverService{repository: repository, hasher: hasher, orderClient: client}
 }
 
 func (s *DriverService) RegisterDriver(driver entities.Driver) error {
@@ -81,6 +89,45 @@ func (s *DriverService) LogInDriver(driver entities.Driver) (entities.Driver, er
 
 func (s *DriverService) RateDriverFromOrder(phoneNumber string, rating float64) error {
 	if err := s.repository.AppendRatingToDriver(phoneNumber, rating); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *DriverService) EndRide(ctx context.Context, id string) error {
+	_, err := s.orderClient.EndRide(ctx, &pb.EndRideRequest{
+		OrderId:     id,
+		OrderStatus: false,
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *DriverService) TakeOrder(ctx context.Context, driver entities.Driver) (*pb.DriverRideResponse, error) {
+	response, err := s.orderClient.TakeOrder(ctx, &pb.ServeClientRequest{
+		Driver: &pb.Driver{
+			Name:        driver.Name,
+			Email:       driver.Email,
+			PhoneNumber: driver.PhoneNumber,
+			TaxiType:    driver.TaxiType,
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+	return response, nil
+}
+
+func (s *DriverService) RateRideFromDriver(ctx context.Context, id string, rating int32) error {
+	_, err := s.orderClient.RateRideFromDriver(ctx, &pb.RateUserFromDriver{
+		OrderId: id,
+		Rating:  rating,
+	})
+
+	if err != nil {
 		return err
 	}
 	return nil
