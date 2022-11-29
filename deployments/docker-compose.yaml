@@ -3,7 +3,7 @@ version: "3.9"
 services:
   cassandra-seed:
     image: cassandra:latest
-    container_name: cassandra-seed
+    container_name: Seed
     volumes:
       - ../../cassandra_data_seed:/var/lib/cassandra
     environment:
@@ -11,7 +11,7 @@ services:
       - "CASSANDRA_CLUSTER_NAME=driver-cluster"
       - "CASSANDRA_DC=driver-datacenter"
       - HEAP_NEWSIZE=128M
-      - MAX_HEAP_SIZE=2048M
+      - MAX_HEAP_SIZE=1024M
     expose:
       - 9042
     ports:
@@ -19,7 +19,7 @@ services:
 
   cassandra-first-node:
     image: cassandra:latest
-    container_name: cassandra-first-node
+    container_name: First-node
     volumes:
       - ../../cassandra_data:/var/lib/cassandra
     environment:
@@ -27,13 +27,13 @@ services:
       - "CASSANDRA_CLUSTER_NAME=driver-cluster"
       - "CASSANDRA_DC=driver-datacenter"
       - HEAP_NEWSIZE=128M
-      - MAX_HEAP_SIZE=2048M
+      - MAX_HEAP_SIZE=1024M
     depends_on:
       - cassandra-seed
 
   cassandra-second-node:
     image: cassandra:latest
-    container_name: cassandra-second-node
+    container_name: Second-node
     volumes:
       - ../../cassandra_second_data:/var/lib/cassandra
     environment:
@@ -41,6 +41,25 @@ services:
       - "CASSANDRA_CLUSTER_NAME=driver-cluster"
       - "CASSANDRA_DC=driver-datacenter"
       - HEAP_NEWSIZE=128M
-      - MAX_HEAP_SIZE=2048M
+      - MAX_HEAP_SIZE=1024M
     depends_on:
       - cassandra-seed
+
+  driverservice:
+    container_name: driver-service
+    restart: on-failure
+    build:
+      dockerfile: ./deployments/dockerfile
+      context: ../
+    env_file:
+      - ../internal/configs/connection.env
+    ports:
+      - "80:80"
+    depends_on:
+      - cassandra-seed
+      - cassandra-second-node
+      - cassandra-first-node
+    links:
+      - cassandra-seed
+      - cassandra-second-node
+      - cassandra-first-node

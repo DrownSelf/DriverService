@@ -1,0 +1,39 @@
+name: CI/CD
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  testAndLint:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.18
+
+      - uses: extractions/netrc@v1
+        with:
+          machine: github.com
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+
+      - name: Set envar
+        run: export GOPRIVATE=github.com/DrownSelf
+
+      - name: Verify dependencies
+        run: go mod verify
+
+      - name: Build
+        run: go build -v ./...
+
+      - name: Install golangci
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.49.0
+
+      - name: Run linter
+        run: golangci-lint run
+        
+      - name: Run tests
+        run: go test -race -vet=off ./...

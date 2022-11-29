@@ -1,0 +1,237 @@
+info:
+    title: Driver Service Inno Taxi
+    version: '1.0'
+
+definitions:
+    Driver:
+        properties:
+            name:
+                type: string
+            email:
+                type: string
+            password:
+                type: string
+            phoneNumber:
+                type: string
+            taxiType:
+                type: string
+        type: object
+    LogInDriverRequest:
+        properties:
+            phoneNumber:
+                type: string
+            password:
+                type: string
+        type: object
+    EndRideRequest:
+        properties:
+            Id:
+                type: string
+        type: object
+    RateUserRequest:
+        properties:
+            id:
+                type: string
+            rating:
+                type: integer
+        type: object
+
+    OrderRateRequest:
+        properties:
+            phoneNumber:
+                type: string
+            rating:
+                type: integer
+
+    GetDriverResponse:
+        properties:
+            name:
+                type: string
+            phoneNumber:
+                type: string
+            taxiType:
+                type: string
+        type: object
+
+    DriverRideResponse:
+        properties:
+            OrderId:
+                type: string
+            From:
+                type: string
+            To:
+                type: string
+            UserName:
+                type: string
+            UserPhoneNumber:
+                type: string
+        type: object
+
+    id:
+        type: integer
+    token:
+        type: string
+paths:
+    /driver:
+        get:
+            summary: Respond info about driver. To get info you need token(to be authorized)
+            produces:
+                - application/json
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        $ref: '#/definitions/GetDriverResponse'
+                '400':
+                    description: Bad request. Cause can be invalid token.
+            tags:
+                - Actions with token
+    /driver/login:
+        post:
+            summary: Log in driver in system.
+            parameters:
+                - name: log in request
+                  in: body
+                  description: object which you need send to login
+                  schema:
+                      $ref: '#/definitions/LogInDriverRequest'
+            produces:
+                - application/json
+            responses:
+                '200':
+                    description: OK
+                    schema:
+                        $ref: '#/definitions/token'
+                '400':
+                    description: Bad request. Cause can be wrong password or absense of user.
+                '500':
+                    description: Internal server error.
+            tags:
+                - Logging actions
+
+    /driver/register:
+        post:
+            summary: Register new driver in system.
+            produces:
+                - application/json
+            parameters:
+                - name: Register Request
+                  in: body
+                  description: object which you need send to register
+                  schema:
+                      $ref: '#/definitions/Driver'
+            responses:
+                '201':
+                    description: Driver created and return id
+                    schema:
+                        $ref: '#/definitions/id'
+                '400':
+                    description: Bad request. Cause can be invalid data.
+                '500':
+                    description: Internal server error.
+            tags:
+                - Logging actions
+
+    /driver/logout:
+        get:
+            summary: log out from session
+            produces:
+                - application/json
+            responses:
+                '200':
+                    description: OK
+                '400':
+                    description: Bad request. Cause can be that you logged out before or haven't sign in.
+            tags:
+                - Actions with token
+
+    /driver/endRide:
+        post:
+            summary: Request to end ride with user
+            produces:
+                - application/json
+            parameters:
+                - name: Change status of request
+                  in: body
+                  description: Changing status of ride and make driver free
+                  schema:
+                      $ref: '#/definitions/EndRideRequest'
+
+            responses:
+                '200':
+                    description: OK
+                '500':
+                    description: Internal error
+            tags:
+                - Actions with token
+                - Actions with order
+
+    /driver/takeOrder:
+        post:
+            summary: Request to take order from user which make order
+            produces:
+                - application/json
+            parameters:
+                - name: Request to assign in wating queue
+                  in: body
+                  description: Adding driver in waiting queue when find user order would create.
+                  schema:
+                      $ref: '#/definitions/Driver'
+            responses:
+                '200':
+                    description: 'Successfully found'
+                    schema:
+                        $ref: '#/definitions/DriverRideResponse'
+                '500':
+                    description: 'Internal error'
+                '400':
+                    description: 'Bad Request'
+            tags:
+                - Actions with token
+                - Actions with order
+    /driver/rateUser:
+        post:
+            summary: Request to rate user after ride
+            produces:
+                - applications/json
+            parameters:
+                - name: Request to rate user
+                  in: body
+                  description: Add rating to user
+                  schema:
+                      $ref: '#/definitions/RateUserRequest'
+            responses:
+                '200':
+                    description: 'Successfully added'
+                '400':
+                    description: 'Bad request'
+                '500':
+                    description: 'Internal server error'
+            tags:
+                - Actions with token
+                - Actions with order
+
+    /order/rateDriver:
+        post:
+            summary: Rate from user
+            produces:
+                - application/json
+            parameters:
+                - name: Request to add rating to driver
+                  in: body
+                  description: Adding rate to driver
+                  schema:
+                      $ref: '#/definitions/OrderRateRequest'
+            responses:
+                '200':
+                    description: 'Successfully added'
+                '400':
+                    description: 'Bad request'
+                '500':
+                    description: 'Internal server error'
+            tags:
+                - Actions with token
+                - Actions with order
+
+host: localhost:8081
+swagger: '2.0'
